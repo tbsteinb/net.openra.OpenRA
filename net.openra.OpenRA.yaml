@@ -6,7 +6,7 @@ command: openra-ra
 rename-desktop-file: net.openra.OpenRA-ra.desktop
 rename-icon: net.openra.OpenRA-ra
 sdk-extensions:
-  - org.freedesktop.Sdk.Extension.dotnet9
+  - org.freedesktop.Sdk.Extension.mono6
 finish-args:
   - --socket=wayland
   - --socket=fallback-x11
@@ -22,9 +22,11 @@ finish-args:
   - --filesystem=xdg-run/app/com.discordapp.Discord:ro
   - --filesystem=xdg-run/app/com.discordapp.DiscordCanary:ro
 build-options:
-  append-path: /usr/lib/sdk/dotnet9/bin
-  append-ld-library-path: /usr/lib/sdk/dotnet9/lib
-  append-pkg-config-path: /usr/lib/sdk/dotnet9/lib/pkgconfig
+  append-path: /usr/lib/sdk/mono6/bin
+  append-ld-library-path: /usr/lib/sdk/mono6/lib
+  # append-path: /usr/lib/sdk/dotnet6/bin
+  # append-ld-library-path: /usr/lib/sdk/dotnet6/lib
+  # append-pkg-config-path: /usr/lib/sdk/dotnet6/lib/pkgconfig
 modules:
   - name: OpenRA
     sources:
@@ -41,8 +43,7 @@ modules:
         path: nuget.config
       # Generate nuget sources with https://github.com/flatpak/flatpak-builder-tools/tree/master/dotnet
       # The script must be run with the arguments `-r linux-x64` and `-r linux-arm64` separately
-      - type: file
-        path: nuget-manifest.json
+      - nuget-sources.json
       - type: file
         # Source: https://download.ip2location.com/lite/IP2LOCATION-LITE-DB1.IPV6.BIN.ZIP
         path: IP2LOCATION-LITE-DB1.IPV6.BIN.ZIP
@@ -53,8 +54,6 @@ modules:
       - type: file
         path: openra.metainfo.xml.in
     build-options:
-      build-args:
-        - --share=network
       arch:
         aarch64:
           env:
@@ -65,8 +64,12 @@ modules:
     buildsystem: simple
     build-commands:
       - if git rev-parse 2>/dev/null; then make version; fi
-      - make prefix=/app TARGETPLATFORM="${RUNTIME}" install
+      - make prefix=/app RUNTIME=mono TARGETPLATFORM="${RUNTIME}" install
       - make prefix=/app install-linux-shortcuts
+      - install -d /app/lib/mono
+      - cp -a /usr/lib/sdk/mono6/lib/mono/* /app/lib/mono
+      - install -d /app/bin
+      - cp -a /usr/lib/sdk/mono6/bin/mono* /app/bin/
       - |
         # Set version and release date in our custom Metainfo and install it
         set -e
