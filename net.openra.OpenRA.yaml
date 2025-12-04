@@ -1,12 +1,12 @@
 app-id: net.openra.OpenRA
 runtime: org.freedesktop.Platform
-runtime-version: '23.08'
+runtime-version: "25.08"
 sdk: org.freedesktop.Sdk
 command: openra-ra
 rename-desktop-file: net.openra.OpenRA-ra.desktop
 rename-icon: net.openra.OpenRA-ra
 sdk-extensions:
-  - org.freedesktop.Sdk.Extension.dotnet6
+  - org.freedesktop.Sdk.Extension.dotnet9
 finish-args:
   - --socket=wayland
   - --socket=fallback-x11
@@ -22,9 +22,9 @@ finish-args:
   - --filesystem=xdg-run/app/com.discordapp.Discord:ro
   - --filesystem=xdg-run/app/com.discordapp.DiscordCanary:ro
 build-options:
-  append-path: /usr/lib/sdk/dotnet6/bin
-  append-ld-library-path: /usr/lib/sdk/dotnet6/lib
-  append-pkg-config-path: /usr/lib/sdk/dotnet6/lib/pkgconfig
+  append-path: /usr/lib/sdk/dotnet9/bin
+  append-ld-library-path: /usr/lib/sdk/dotnet9/lib
+  append-pkg-config-path: /usr/lib/sdk/dotnet9/lib/pkgconfig
 modules:
   - name: OpenRA
     sources:
@@ -41,17 +41,20 @@ modules:
         path: nuget.config
       # Generate nuget sources with https://github.com/flatpak/flatpak-builder-tools/tree/master/dotnet
       # The script must be run with the arguments `-r linux-x64` and `-r linux-arm64` separately
-      - nuget-sources.json
+      - type: file
+        path: nuget-manifest.json
       - type: file
         # Source: https://download.ip2location.com/lite/IP2LOCATION-LITE-DB1.IPV6.BIN.ZIP
         path: IP2LOCATION-LITE-DB1.IPV6.BIN.ZIP
       - type: script
         commands:
-          - '# NOP'
+          - "# NOP"
         dest-filename: fetch-geoip.sh
       - type: file
         path: openra.metainfo.xml.in
     build-options:
+      build-args:
+        - --share=network
       arch:
         aarch64:
           env:
